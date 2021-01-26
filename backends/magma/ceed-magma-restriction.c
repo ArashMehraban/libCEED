@@ -114,7 +114,8 @@ int CeedElemRestrictionApplyBlock_Magma(CeedElemRestriction r, CeedInt block,
   Ceed ceed;
   ierr = CeedElemRestrictionGetCeed(r, &ceed); CeedChk(ierr);
   // LCOV_EXCL_START
-  return CeedError(ceed, 1, "Backend does not implement blocked restrictions");
+  return CeedError(ceed, CEED_ERROR_BACKEND,
+                   "Backend does not implement blocked restrictions");
   // LCOV_EXCL_STOP
 }
 
@@ -242,7 +243,8 @@ int CeedElemRestrictionCreate_Magma(CeedMemType mtype, CeedCopyMode cmode,
     }
 
   } else
-    return CeedError(ceed, 1, "Only MemType = HOST or DEVICE supported");
+    return CeedError(ceed, CEED_ERROR_BACKEND,
+                     "Only MemType = HOST or DEVICE supported");
 
   ierr = CeedElemRestrictionSetData(r, impl); CeedChk(ierr);
   CeedInt layout[3] = {1, elemsize*nelem, elemsize};
@@ -267,7 +269,8 @@ int CeedElemRestrictionCreateBlocked_Magma(const CeedMemType mtype,
   Ceed ceed;
   ierr = CeedElemRestrictionGetCeed(r, &ceed); CeedChk(ierr);
   // LCOV_EXCL_START
-  return CeedError(ceed, 1, "Backend does not implement blocked restrictions");
+  return CeedError(ceed, CEED_ERROR_BACKEND,
+                   "Backend does not implement blocked restrictions");
   // LCOV_EXCL_STOP
 
   return 0;

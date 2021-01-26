@@ -823,7 +823,7 @@ extern "C" int CeedCudaGenOperatorBuild(CeedOperator op) {
         if (P1d>data->maxP1d) data->maxP1d = P1d;
       } else {
         // LCOV_EXCL_START
-        return CeedError(ceed, 1, "Backend does not implement operators with non-tensor basis");
+        return CeedError(ceed, CEED_ERROR_BACKEND, "Backend does not implement operators with non-tensor basis");
         // LCOV_EXCL_STOP
         }
     }
@@ -846,7 +846,7 @@ extern "C" int CeedCudaGenOperatorBuild(CeedOperator op) {
         ierr = CeedBasisGetNumQuadraturePoints1D(basis, &Q1d); CeedChk(ierr);
       } else {
         // LCOV_EXCL_START
-        return CeedError(ceed, 1, "Backend does not implement operators with non-tensor basis");
+        return CeedError(ceed, CEED_ERROR_BACKEND, "Backend does not implement operators with non-tensor basis");
         // LCOV_EXCL_STOP
         }
 
@@ -1006,7 +1006,7 @@ extern "C" int CeedCudaGenOperatorBuild(CeedOperator op) {
     case CEED_EVAL_WEIGHT: {
       Ceed ceed;
       ierr = CeedOperatorGetCeed(op, &ceed); CeedChk(ierr);
-      return CeedError(ceed, 1,
+      return CeedError(ceed, CEED_ERROR_BACKEND,
                        "CEED_EVAL_WEIGHT cannot be an output evaluation mode");
       break; // Should not occur
     }
@@ -1322,7 +1322,7 @@ extern "C" int CeedCudaGenOperatorBuild(CeedOperator op) {
     case CEED_EVAL_WEIGHT: {
       Ceed ceed;
       ierr = CeedOperatorGetCeed(op, &ceed); CeedChk(ierr);
-      return CeedError(ceed, 1,
+      return CeedError(ceed, CEED_ERROR_BACKEND,
                        "CEED_EVAL_WEIGHT cannot be an output evaluation mode");
       break; // Should not occur
     }

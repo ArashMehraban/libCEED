@@ -39,7 +39,7 @@ static int CeedBasisApply_Ref(CeedBasis basis, CeedInt nelem,
     ierr = CeedVectorGetArrayRead(U, CEED_MEM_HOST, &u); CeedChk(ierr);
   } else if (emode != CEED_EVAL_WEIGHT) {
     // LCOV_EXCL_START
-    return CeedError(ceed, 1,
+    return CeedError(ceed, CEED_ERROR_BACKEND,
                      "An input vector is required for this CeedEvalMode");
     // LCOV_EXCL_STOP
   }
@@ -196,7 +196,7 @@ static int CeedBasisApply_Ref(CeedBasis basis, CeedInt nelem,
     case CEED_EVAL_WEIGHT: {
       if (tmode == CEED_TRANSPOSE)
         // LCOV_EXCL_START
-        return CeedError(ceed, 1,
+        return CeedError(ceed, CEED_ERROR_BACKEND,
                          "CEED_EVAL_WEIGHT incompatible with CEED_TRANSPOSE");
       // LCOV_EXCL_STOP
       CeedInt Q = Q1d;
@@ -217,13 +217,13 @@ static int CeedBasisApply_Ref(CeedBasis basis, CeedInt nelem,
     // LCOV_EXCL_START
     // Evaluate the divergence to/from the quadrature points
     case CEED_EVAL_DIV:
-      return CeedError(ceed, 1, "CEED_EVAL_DIV not supported");
+      return CeedError(ceed, CEED_ERROR_BACKEND, "CEED_EVAL_DIV not supported");
     // Evaluate the curl to/from the quadrature points
     case CEED_EVAL_CURL:
-      return CeedError(ceed, 1, "CEED_EVAL_CURL not supported");
+      return CeedError(ceed, CEED_ERROR_BACKEND, "CEED_EVAL_CURL not supported");
     // Take no action, BasisApply should not have been called
     case CEED_EVAL_NONE:
-      return CeedError(ceed, 1,
+      return CeedError(ceed, CEED_ERROR_BACKEND,
                        "CEED_EVAL_NONE does not make sense in this context");
       // LCOV_EXCL_STOP
     }
@@ -270,7 +270,7 @@ static int CeedBasisApply_Ref(CeedBasis basis, CeedInt nelem,
     case CEED_EVAL_WEIGHT: {
       if (tmode == CEED_TRANSPOSE)
         // LCOV_EXCL_START
-        return CeedError(ceed, 1,
+        return CeedError(ceed, CEED_ERROR_BACKEND,
                          "CEED_EVAL_WEIGHT incompatible with CEED_TRANSPOSE");
       // LCOV_EXCL_STOP
       const CeedScalar *qweight;
@@ -282,13 +282,13 @@ static int CeedBasisApply_Ref(CeedBasis basis, CeedInt nelem,
     // LCOV_EXCL_START
     // Evaluate the divergence to/from the quadrature points
     case CEED_EVAL_DIV:
-      return CeedError(ceed, 1, "CEED_EVAL_DIV not supported");
+      return CeedError(ceed, CEED_ERROR_BACKEND, "CEED_EVAL_DIV not supported");
     // Evaluate the curl to/from the quadrature points
     case CEED_EVAL_CURL:
-      return CeedError(ceed, 1, "CEED_EVAL_CURL not supported");
+      return CeedError(ceed, CEED_ERROR_BACKEND, "CEED_EVAL_CURL not supported");
     // Take no action, BasisApply should not have been called
     case CEED_EVAL_NONE:
-      return CeedError(ceed, 1,
+      return CeedError(ceed, CEED_ERROR_BACKEND,
                        "CEED_EVAL_NONE does not make sense in this context");
       // LCOV_EXCL_STOP
     }
