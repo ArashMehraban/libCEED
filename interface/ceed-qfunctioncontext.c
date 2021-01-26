@@ -39,7 +39,7 @@
 **/
 int CeedQFunctionContextGetCeed(CeedQFunctionContext ctx, Ceed *ceed) {
   *ceed = ctx->ceed;
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 /**
@@ -54,7 +54,7 @@ int CeedQFunctionContextGetCeed(CeedQFunctionContext ctx, Ceed *ceed) {
 **/
 int CeedQFunctionContextGetState(CeedQFunctionContext ctx, uint64_t *state) {
   *state = ctx->state;
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 /**
@@ -70,7 +70,7 @@ int CeedQFunctionContextGetState(CeedQFunctionContext ctx, uint64_t *state) {
 int CeedQFunctionContextGetContextSize(CeedQFunctionContext ctx,
                                        size_t *ctxsize) {
   *ctxsize = ctx->ctxsize;
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 /**
@@ -85,7 +85,7 @@ int CeedQFunctionContextGetContextSize(CeedQFunctionContext ctx,
 **/
 int CeedQFunctionContextGetBackendData(CeedQFunctionContext ctx, void *data) {
   *(void **)data = ctx->data;
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 /**
@@ -100,7 +100,7 @@ int CeedQFunctionContextGetBackendData(CeedQFunctionContext ctx, void *data) {
 **/
 int CeedQFunctionContextSetBackendData(CeedQFunctionContext ctx, void *data) {
   ctx->data = data;
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 /// @}
@@ -131,11 +131,12 @@ int CeedQFunctionContextCreate(Ceed ceed, CeedQFunctionContext *ctx) {
 
     if (!delegate)
       // LCOV_EXCL_START
-      return CeedError(ceed, 1, "Backend does not support ContextCreate");
+      return CeedError(ceed, CEED_ERROR_UNSUPPORTED,
+                       "Backend does not support ContextCreate");
     // LCOV_EXCL_STOP
 
     ierr = CeedQFunctionContextCreate(delegate, ctx); CeedChk(ierr);
-    return 0;
+    return CEED_ERROR_SUCCESS;
   }
 
   ierr = CeedCalloc(1, ctx); CeedChk(ierr);
@@ -143,7 +144,7 @@ int CeedQFunctionContextCreate(Ceed ceed, CeedQFunctionContext *ctx) {
   ceed->refcount++;
   (*ctx)->refcount = 1;
   ierr = ceed->QFunctionContextCreate(*ctx); CeedChk(ierr);
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 /**
@@ -168,7 +169,8 @@ int CeedQFunctionContextSetData(CeedQFunctionContext ctx, CeedMemType mtype,
 
   if (!ctx->SetData)
     // LCOV_EXCL_START
-    return CeedError(ctx->ceed, 1, "Backend does not support ContextSetData");
+    return CeedError(ctx->ceed, CEED_ERROR_UNSUPPORTED,
+                     "Backend does not support ContextSetData");
   // LCOV_EXCL_STOP
 
   if (ctx->state % 2 == 1)
@@ -182,7 +184,7 @@ int CeedQFunctionContextSetData(CeedQFunctionContext ctx, CeedMemType mtype,
   ierr = ctx->SetData(ctx, mtype, cmode, data); CeedChk(ierr);
   ctx->state += 2;
 
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 /**
@@ -208,7 +210,8 @@ int CeedQFunctionContextGetData(CeedQFunctionContext ctx, CeedMemType mtype,
 
   if (!ctx->GetData)
     // LCOV_EXCL_START
-    return CeedError(ctx->ceed, 1, "Backend does not support GetData");
+    return CeedError(ctx->ceed, CEED_ERROR_UNSUPPORTED,
+                     "Backend does not support GetData");
   // LCOV_EXCL_STOP
 
   if (ctx->state % 2 == 1)
@@ -221,7 +224,7 @@ int CeedQFunctionContextGetData(CeedQFunctionContext ctx, CeedMemType mtype,
   ierr = ctx->GetData(ctx, mtype, data); CeedChk(ierr);
   ctx->state += 1;
 
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 /**
@@ -239,7 +242,8 @@ int CeedQFunctionContextRestoreData(CeedQFunctionContext ctx, void *data) {
 
   if (!ctx->RestoreData)
     // LCOV_EXCL_START
-    return CeedError(ctx->ceed, 1, "Backend does not support RestoreData");
+    return CeedError(ctx->ceed, CEED_ERROR_UNSUPPORTED,
+                     "Backend does not support RestoreData");
   // LCOV_EXCL_STOP
 
   if (ctx->state % 2 != 1)
@@ -252,8 +256,7 @@ int CeedQFunctionContextRestoreData(CeedQFunctionContext ctx, void *data) {
   ierr = ctx->RestoreData(ctx); CeedChk(ierr);
   *(void **)data = NULL;
   ctx->state += 1;
-
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 /**
@@ -269,7 +272,7 @@ int CeedQFunctionContextRestoreData(CeedQFunctionContext ctx, void *data) {
 int CeedQFunctionContextView(CeedQFunctionContext ctx, FILE *stream) {
   fprintf(stream, "CeedQFunctionContext\n");
   fprintf(stream, "  Context Data Size: %ld\n", ctx->ctxsize);
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 /**
@@ -285,7 +288,7 @@ int CeedQFunctionContextDestroy(CeedQFunctionContext *ctx) {
   int ierr;
 
   if (!*ctx || --(*ctx)->refcount > 0)
-    return 0;
+    return CEED_ERROR_SUCCESS;
 
   if ((*ctx) && ((*ctx)->state % 2) == 1)
     // LCOV_EXCL_START
@@ -300,7 +303,7 @@ int CeedQFunctionContextDestroy(CeedQFunctionContext *ctx) {
 
   ierr = CeedDestroy(&(*ctx)->ceed); CeedChk(ierr);
   ierr = CeedFree(ctx); CeedChk(ierr);
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 /// @}

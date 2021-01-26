@@ -107,8 +107,9 @@ CeedRequest *const CEED_REQUEST_ORDERED = &ceed_request_ordered;
 **/
 int CeedRequestWait(CeedRequest *req) {
   if (!*req)
-    return 0;
-  return CeedError(NULL, 2, "CeedRequestWait not implemented");
+    return CEED_ERROR_SUCCESS;
+  return CeedError(NULL, CEED_ERROR_UNSUPPORTED,
+                   "CeedRequestWait not implemented");
 }
 
 /// @}
@@ -194,11 +195,11 @@ int CeedMallocArray(size_t n, size_t unit, void *p) {
   int ierr = posix_memalign((void **)p, CEED_ALIGN, n*unit);
   if (ierr)
     // LCOV_EXCL_START
-    return CeedError(NULL, ierr, "posix_memalign failed to allocate %zd "
+    return CeedError(NULL, CEED_ERROR_TERMINAL,
+                     "posix_memalign failed to allocate %zd "
                      "members of size %zd\n", n, unit);
   // LCOV_EXCL_STOP
-
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 /**
@@ -220,11 +221,11 @@ int CeedCallocArray(size_t n, size_t unit, void *p) {
   *(void **)p = calloc(n, unit);
   if (n && unit && !*(void **)p)
     // LCOV_EXCL_START
-    return CeedError(NULL, 1, "calloc failed to allocate %zd members of size "
+    return CeedError(NULL, CEED_ERROR_TERMINAL,
+                     "calloc failed to allocate %zd members of size "
                      "%zd\n", n, unit);
   // LCOV_EXCL_STOP
-
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 /**
@@ -246,11 +247,11 @@ int CeedReallocArray(size_t n, size_t unit, void *p) {
   *(void **)p = realloc(*(void **)p, n*unit);
   if (n && unit && !*(void **)p)
     // LCOV_EXCL_START
-    return CeedError(NULL, 1, "realloc failed to allocate %zd members of size "
+    return CeedError(NULL, CEED_ERROR_TERMINAL,
+                     "realloc failed to allocate %zd members of size "
                      "%zd\n", n, unit);
   // LCOV_EXCL_STOP
-
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 /** Free memory allocated using CeedMalloc() or CeedCalloc()
@@ -262,7 +263,7 @@ int CeedReallocArray(size_t n, size_t unit, void *p) {
 int CeedFree(void *p) {
   free(*(void **)p);
   *(void **)p = NULL;
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 /**
@@ -284,7 +285,7 @@ int CeedRegister(const char *prefix, int (*init)(const char *, Ceed),
                  unsigned int priority) {
   if (num_backends >= sizeof(backends) / sizeof(backends[0]))
     // LCOV_EXCL_START
-    return CeedError(NULL, 1, "Too many backends");
+    return CeedError(NULL, CEED_ERROR_TERMINAL, "Too many backends");
   // LCOV_EXCL_STOP
 
   strncpy(backends[num_backends].prefix, prefix, CEED_MAX_RESOURCE_LEN);
@@ -292,7 +293,7 @@ int CeedRegister(const char *prefix, int (*init)(const char *, Ceed),
   backends[num_backends].init = init;
   backends[num_backends].priority = priority;
   num_backends++;
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 /**
@@ -307,7 +308,7 @@ int CeedRegister(const char *prefix, int (*init)(const char *, Ceed),
 **/
 int CeedIsDebug(Ceed ceed, bool *isDebug) {
   *isDebug = ceed->debug;
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 /**
@@ -324,10 +325,10 @@ int CeedGetParent(Ceed ceed, Ceed *parent) {
   int ierr;
   if (ceed->parent) {
     ierr = CeedGetParent(ceed->parent, parent); CeedChk(ierr);
-    return 0;
+    return CEED_ERROR_SUCCESS;
   }
   *parent = ceed;
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 /**
@@ -342,7 +343,7 @@ int CeedGetParent(Ceed ceed, Ceed *parent) {
 **/
 int CeedGetDelegate(Ceed ceed, Ceed *delegate) {
   *delegate = ceed->delegate;
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 /**
@@ -362,7 +363,7 @@ int CeedGetDelegate(Ceed ceed, Ceed *delegate) {
 int CeedSetDelegate(Ceed ceed, Ceed delegate) {
   ceed->delegate = delegate;
   delegate->parent = ceed;
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 /**
@@ -383,13 +384,12 @@ int CeedGetObjectDelegate(Ceed ceed, Ceed *delegate, const char *objname) {
   for (CeedInt i=0; i<ceed->objdelegatecount; i++)
     if (!strcmp(objname, ceed->objdelegates->objname)) {
       *delegate = ceed->objdelegates->delegate;
-      return 0;
+      return CEED_ERROR_SUCCESS;
     }
 
   // Use default delegate if no object delegate
   ierr = CeedGetDelegate(ceed, delegate); CeedChk(ierr);
-
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 /**
@@ -429,8 +429,7 @@ int CeedSetObjectDelegate(Ceed ceed, Ceed delegate, const char *objname) {
 
   // Set delegate parent
   delegate->parent = ceed;
-
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 /**
@@ -446,7 +445,7 @@ int CeedSetObjectDelegate(Ceed ceed, Ceed delegate, const char *objname) {
 
 int CeedGetOperatorFallbackResource(Ceed ceed, const char **resource) {
   *resource = (const char *)ceed->opfallbackresource;
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 /**
@@ -474,8 +473,7 @@ int CeedSetOperatorFallbackResource(Ceed ceed, const char *resource) {
   ierr = CeedCalloc(len+1, &tmp); CeedChk(ierr);
   memcpy(tmp, resource, len+1);
   ceed->opfallbackresource = tmp;
-
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 /**
@@ -492,7 +490,7 @@ int CeedSetOperatorFallbackResource(Ceed ceed, const char *resource) {
 
 int CeedGetOperatorFallbackParentCeed(Ceed ceed, Ceed *parent) {
   *parent = ceed->opfallbackparent;
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 /**
@@ -507,7 +505,7 @@ int CeedGetOperatorFallbackParentCeed(Ceed ceed, Ceed *parent) {
 
 int CeedSetDeterministic(Ceed ceed, bool isDeterministic) {
   ceed->isDeterministic = isDeterministic;
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 /**
@@ -551,7 +549,8 @@ int CeedSetBackendFunction(Ceed ceed, const char *type, void *object,
     }
 
   // LCOV_EXCL_START
-  return CeedError(ceed, 1, "Requested function '%s' was not found for CEED "
+  return CeedError(ceed, CEED_ERROR_UNSUPPORTED,
+                   "Requested function '%s' was not found for CEED "
                    "object '%s'", fname, type);
   // LCOV_EXCL_STOP
 }
@@ -568,7 +567,7 @@ int CeedSetBackendFunction(Ceed ceed, const char *type, void *object,
 **/
 int CeedGetData(Ceed ceed, void *data) {
   *(void **)data = ceed->data;
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 /**
@@ -583,7 +582,7 @@ int CeedGetData(Ceed ceed, void *data) {
 **/
 int CeedSetData(Ceed ceed, void *data) {
   ceed->data = data;
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 /// @}
@@ -612,7 +611,7 @@ int CeedInit(const char *resource, Ceed *ceed) {
   // Find matching backend
   if (!resource)
     // LCOV_EXCL_START
-    return CeedError(NULL, 1, "No resource provided");
+    return CeedError(NULL, CEED_ERROR_TERMINAL, "No resource provided");
   // LCOV_EXCL_STOP
   ierr = CeedRegisterAll(); CeedChk(ierr);
 
@@ -629,7 +628,8 @@ int CeedInit(const char *resource, Ceed *ceed) {
   }
   if (matchlen <= 1)
     // LCOV_EXCL_START
-    return CeedError(NULL, 1, "No suitable backend: %s", resource);
+    return CeedError(NULL, CEED_ERROR_TERMINAL, "No suitable backend: %s",
+                     resource);
   // LCOV_EXCL_STOP
 
   // Setup Ceed
@@ -723,8 +723,7 @@ int CeedInit(const char *resource, Ceed *ceed) {
   ierr = CeedCalloc(len+1, &tmp); CeedChk(ierr);
   memcpy(tmp, backends[matchidx].prefix, len+1);
   (*ceed)->resource = tmp;
-
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 /**
@@ -740,7 +739,7 @@ int CeedInit(const char *resource, Ceed *ceed) {
 
 int CeedGetResource(Ceed ceed, const char **resource) {
   *resource = (const char *)ceed->resource;
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 /**
@@ -768,8 +767,7 @@ int CeedGetPreferredMemType(Ceed ceed, CeedMemType *type) {
       *type = CEED_MEM_HOST;
     }
   }
-
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 /**
@@ -784,7 +782,7 @@ int CeedGetPreferredMemType(Ceed ceed, CeedMemType *type) {
 **/
 int CeedIsDeterministic(Ceed ceed, bool *isDeterministic) {
   *isDeterministic = ceed->isDeterministic;
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 /**
@@ -807,8 +805,7 @@ int CeedView(Ceed ceed, FILE *stream) {
           "  Ceed Resource: %s\n"
           "  Preferred MemType: %s\n",
           ceed->resource, CeedMemTypes[memtype]);
-
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 /**
@@ -822,7 +819,7 @@ int CeedView(Ceed ceed, FILE *stream) {
 **/
 int CeedDestroy(Ceed *ceed) {
   int ierr;
-  if (!*ceed || --(*ceed)->refcount > 0) return 0;
+  if (!*ceed || --(*ceed)->refcount > 0) return CEED_ERROR_SUCCESS;
   if ((*ceed)->delegate) {
     ierr = CeedDestroy(&(*ceed)->delegate); CeedChk(ierr);
   }
@@ -844,7 +841,7 @@ int CeedDestroy(Ceed *ceed) {
   ierr = CeedDestroy(&(*ceed)->opfallbackceed); CeedChk(ierr);
   ierr = CeedFree(&(*ceed)->opfallbackresource); CeedChk(ierr);
   ierr = CeedFree(ceed); CeedChk(ierr);
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 // LCOV_EXCL_START
@@ -979,7 +976,7 @@ int CeedSetErrorHandler(Ceed ceed,
   if (ceed->delegate) CeedSetErrorHandler(ceed->delegate, eh);
   for (int i=0; i<ceed->objdelegatecount; i++)
     CeedSetErrorHandler(ceed->objdelegates[i].delegate, eh);
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 /**
@@ -995,7 +992,7 @@ int CeedSetErrorHandler(Ceed ceed,
 **/
 int CeedGetErrorMessage(Ceed ceed, const char **errmsg) {
   *errmsg = ceed->errmsg;
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 /**
@@ -1012,7 +1009,7 @@ int CeedGetErrorMessage(Ceed ceed, const char **errmsg) {
 int CeedResetErrorMessage(Ceed ceed, const char **errmsg) {
   *errmsg = NULL;
   memcpy(ceed->errmsg, "No error message stored", 24);
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 /// @}
