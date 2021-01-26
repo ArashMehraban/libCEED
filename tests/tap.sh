@@ -32,9 +32,11 @@ elif [ ${1::4} == "nek-" ]; then
       allargs+=("$(awk -v i="$i" '/C_TESTARGS/,/\n/{j++}j==i+1{print; exit}' examples/nek/bps/${1:4}.usr* | cut -d\  -f2- )")
     done
 elif [ ${1::7} == "fluids-" ]; then
-    # get all test configurations
     numconfig=$(grep -F //TESTARGS examples/fluids/${1:7}.c* | wc -l)
     for ((i=0;i<${numconfig};++i)); do
+      # get test name
+      suffices+=("$(awk -v i="$i" '/\/\/TESTARGS/,/\n/{j++}j==i+1{print substr($1,12,length($1)-12)}' examples/fluids/${1:7}.c)")
+      # get all test configurations
       allargs+=("$(awk -v i="$i" '/\/\/TESTARGS/,/\n/{j++}j==i+1{print; exit}' examples/fluids/${1:7}.c | cut -d\  -f2- )")
     done
 elif [ ${1::7} == "solids-" ]; then
@@ -57,6 +59,7 @@ trap 'rm -f ${tmpfiles}' EXIT
 # test configurations loop
 for ((j=0;j<${#allargs[@]};++j)); do
 args=${allargs[$j]}
+printf "${suffices[$j]}\n"
 printf "# TESTARGS: $args\n"
 
 # backends loop
