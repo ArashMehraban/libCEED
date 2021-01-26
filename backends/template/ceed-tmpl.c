@@ -33,9 +33,9 @@ static int CeedInit_Tmpl(const char *resource, Ceed ceed) {
   //   through unless overridden
   Ceed ceedref;
   CeedInit("/cpu/self/ref/blocked", &ceedref);
-  ierr = CeedSetDelegate(ceed, ceedref); CeedChk(ierr);
+  ierr = CeedSetDelegate(ceed, ceedref); CeedChkBackend(ierr);
 
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 //------------------------------------------------------------------------------

@@ -23,7 +23,7 @@
 static inline size_t bytes(const CeedQFunctionContext ctx) {
   int ierr;
   size_t ctxsize;
-  ierr = CeedQFunctionContextGetContextSize(ctx, &ctxsize); CeedChk(ierr);
+  ierr = CeedQFunctionContextGetContextSize(ctx, &ctxsize); CeedChkBackend(ierr);
   return ctxsize;
 }
 
@@ -34,9 +34,9 @@ static inline int CeedQFunctionContextSyncH2D_Cuda(
   const CeedQFunctionContext ctx) {
   int ierr;
   Ceed ceed;
-  ierr = CeedQFunctionContextGetCeed(ctx, &ceed); CeedChk(ierr);
+  ierr = CeedQFunctionContextGetCeed(ctx, &ceed); CeedChkBackend(ierr);
   CeedQFunctionContext_Cuda *impl;
-  ierr = CeedQFunctionContextGetBackendData(ctx, &impl); CeedChk(ierr);
+  ierr = CeedQFunctionContextGetBackendData(ctx, &impl); CeedChkBackend(ierr);
 
   ierr = cudaMemcpy(impl->d_data, impl->h_data, bytes(ctx),
                     cudaMemcpyHostToDevice); CeedChk_Cu(ceed, ierr);
@@ -50,9 +50,9 @@ static inline int CeedQFunctionContextSyncD2H_Cuda(
   const CeedQFunctionContext ctx) {
   int ierr;
   Ceed ceed;
-  ierr = CeedQFunctionContextGetCeed(ctx, &ceed); CeedChk(ierr);
+  ierr = CeedQFunctionContextGetCeed(ctx, &ceed); CeedChkBackend(ierr);
   CeedQFunctionContext_Cuda *impl;
-  ierr = CeedQFunctionContextGetBackendData(ctx, &impl); CeedChk(ierr);
+  ierr = CeedQFunctionContextGetBackendData(ctx, &impl); CeedChkBackend(ierr);
 
   ierr = cudaMemcpy(impl->h_data, impl->d_data, bytes(ctx),
                     cudaMemcpyDeviceToHost); CeedChk_Cu(ceed, ierr);
@@ -67,23 +67,23 @@ static int CeedQFunctionContextSetDataHost_Cuda(const CeedQFunctionContext ctx,
     CeedScalar *data) {
   int ierr;
   CeedQFunctionContext_Cuda *impl;
-  ierr = CeedQFunctionContextGetBackendData(ctx, &impl); CeedChk(ierr);
+  ierr = CeedQFunctionContextGetBackendData(ctx, &impl); CeedChkBackend(ierr);
 
   switch (cmode) {
   case CEED_COPY_VALUES: {
     if(!impl->h_data) {
-      ierr = CeedMalloc(bytes(ctx), &impl->h_data_allocated); CeedChk(ierr);
+      ierr = CeedMalloc(bytes(ctx), &impl->h_data_allocated); CeedChkBackend(ierr);
       impl->h_data = impl->h_data_allocated;
     }
     memcpy(impl->h_data, data, bytes(ctx));
   } break;
   case CEED_OWN_POINTER:
-    ierr = CeedFree(&impl->h_data_allocated); CeedChk(ierr);
+    ierr = CeedFree(&impl->h_data_allocated); CeedChkBackend(ierr);
     impl->h_data_allocated = data;
     impl->h_data = data;
     break;
   case CEED_USE_POINTER:
-    ierr = CeedFree(&impl->h_data_allocated); CeedChk(ierr);
+    ierr = CeedFree(&impl->h_data_allocated); CeedChkBackend(ierr);
     impl->h_data = data;
     break;
   }
@@ -99,9 +99,9 @@ static int CeedQFunctionContextSetDataDevice_Cuda(const CeedQFunctionContext
     const CeedCopyMode cmode, CeedScalar *data) {
   int ierr;
   Ceed ceed;
-  ierr = CeedQFunctionContextGetCeed(ctx, &ceed); CeedChk(ierr);
+  ierr = CeedQFunctionContextGetCeed(ctx, &ceed); CeedChkBackend(ierr);
   CeedQFunctionContext_Cuda *impl;
-  ierr = CeedQFunctionContextGetBackendData(ctx, &impl); CeedChk(ierr);
+  ierr = CeedQFunctionContextGetBackendData(ctx, &impl); CeedChkBackend(ierr);
 
   switch (cmode) {
   case CEED_COPY_VALUES:
@@ -138,7 +138,7 @@ static int CeedQFunctionContextSetData_Cuda(const CeedQFunctionContext ctx,
     CeedScalar *data) {
   int ierr;
   Ceed ceed;
-  ierr = CeedQFunctionContextGetCeed(ctx, &ceed); CeedChk(ierr);
+  ierr = CeedQFunctionContextGetCeed(ctx, &ceed); CeedChkBackend(ierr);
 
   switch (mtype) {
   case CEED_MEM_HOST:
@@ -156,9 +156,9 @@ static int CeedQFunctionContextGetData_Cuda(const CeedQFunctionContext ctx,
     const CeedMemType mtype, CeedScalar *data) {
   int ierr;
   Ceed ceed;
-  ierr = CeedQFunctionContextGetCeed(ctx, &ceed); CeedChk(ierr);
+  ierr = CeedQFunctionContextGetCeed(ctx, &ceed); CeedChkBackend(ierr);
   CeedQFunctionContext_Cuda *impl;
-  ierr = CeedQFunctionContextGetBackendData(ctx, &impl); CeedChk(ierr);
+  ierr = CeedQFunctionContextGetBackendData(ctx, &impl); CeedChkBackend(ierr);
   if(impl->h_data == NULL && impl->d_data == NULL)
     // LCOV_EXCL_START
     return CeedError(ceed, CEED_ERROR_BACKEND, "No context data set");
@@ -169,11 +169,11 @@ static int CeedQFunctionContextGetData_Cuda(const CeedQFunctionContext ctx,
   case CEED_MEM_HOST:
     if (impl->h_data == NULL) {
       ierr = CeedMalloc(bytes(ctx), &impl->h_data_allocated);
-      CeedChk(ierr);
+      CeedChkBackend(ierr);
       impl->h_data = impl->h_data_allocated;
     }
     if (impl->memState == CEED_CUDA_DEVICE_SYNC) {
-      ierr = CeedQFunctionContextSyncD2H_Cuda(ctx); CeedChk(ierr);
+      ierr = CeedQFunctionContextSyncD2H_Cuda(ctx); CeedChkBackend(ierr);
     }
     impl->memState = CEED_CUDA_HOST_SYNC;
     *(void **)data = impl->h_data;
@@ -185,7 +185,7 @@ static int CeedQFunctionContextGetData_Cuda(const CeedQFunctionContext ctx,
       impl->d_data = impl->d_data_allocated;
     }
     if (impl->memState == CEED_CUDA_HOST_SYNC) {
-      ierr = CeedQFunctionContextSyncH2D_Cuda(ctx); CeedChk(ierr);
+      ierr = CeedQFunctionContextSyncH2D_Cuda(ctx); CeedChkBackend(ierr);
     }
     impl->memState = CEED_CUDA_DEVICE_SYNC;
     *(void **)data = impl->d_data;
@@ -208,13 +208,13 @@ static int CeedQFunctionContextRestoreData_Cuda(const CeedQFunctionContext
 static int CeedQFunctionContextDestroy_Cuda(const CeedQFunctionContext ctx) {
   int ierr;
   Ceed ceed;
-  ierr = CeedQFunctionContextGetCeed(ctx, &ceed); CeedChk(ierr);
+  ierr = CeedQFunctionContextGetCeed(ctx, &ceed); CeedChkBackend(ierr);
   CeedQFunctionContext_Cuda *impl;
-  ierr = CeedQFunctionContextGetBackendData(ctx, &impl); CeedChk(ierr);
+  ierr = CeedQFunctionContextGetBackendData(ctx, &impl); CeedChkBackend(ierr);
 
   ierr = cudaFree(impl->d_data_allocated); CeedChk_Cu(ceed, ierr);
-  ierr = CeedFree(&impl->h_data_allocated); CeedChk(ierr);
-  ierr = CeedFree(&impl); CeedChk(ierr);
+  ierr = CeedFree(&impl->h_data_allocated); CeedChkBackend(ierr);
+  ierr = CeedFree(&impl); CeedChkBackend(ierr);
   return 0;
 }
 
@@ -225,19 +225,19 @@ int CeedQFunctionContextCreate_Cuda(CeedQFunctionContext ctx) {
   int ierr;
   CeedQFunctionContext_Cuda *impl;
   Ceed ceed;
-  ierr = CeedQFunctionContextGetCeed(ctx, &ceed); CeedChk(ierr);
+  ierr = CeedQFunctionContextGetCeed(ctx, &ceed); CeedChkBackend(ierr);
 
   ierr = CeedSetBackendFunction(ceed, "QFunctionContext", ctx, "SetData",
-                                CeedQFunctionContextSetData_Cuda); CeedChk(ierr);
+                                CeedQFunctionContextSetData_Cuda); CeedChkBackend(ierr);
   ierr = CeedSetBackendFunction(ceed, "QFunctionContext", ctx, "GetData",
-                                CeedQFunctionContextGetData_Cuda); CeedChk(ierr);
+                                CeedQFunctionContextGetData_Cuda); CeedChkBackend(ierr);
   ierr = CeedSetBackendFunction(ceed, "QFunctionContext", ctx, "RestoreData",
-                                CeedQFunctionContextRestoreData_Cuda); CeedChk(ierr);
+                                CeedQFunctionContextRestoreData_Cuda); CeedChkBackend(ierr);
   ierr = CeedSetBackendFunction(ceed, "QFunctionContext", ctx, "Destroy",
-                                CeedQFunctionContextDestroy_Cuda); CeedChk(ierr);
-  ierr = CeedCalloc(1, &impl); CeedChk(ierr);
+                                CeedQFunctionContextDestroy_Cuda); CeedChkBackend(ierr);
+  ierr = CeedCalloc(1, &impl); CeedChkBackend(ierr);
   impl->memState = CEED_CUDA_NONE_SYNC;
-  ierr = CeedQFunctionContextSetBackendData(ctx, impl); CeedChk(ierr);
+  ierr = CeedQFunctionContextSetBackendData(ctx, impl); CeedChkBackend(ierr);
   return 0;
 }
 //------------------------------------------------------------------------------

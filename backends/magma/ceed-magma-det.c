@@ -24,7 +24,7 @@ CEED_INTERN int CeedInit_Magma_Det(const char *resource, Ceed ceed) {
     return CeedError(ceed, CEED_ERROR_BACKEND,
                      "Magma backend cannot use resource: %s", resource);
   // LCOV_EXCL_STOP
-  ierr = CeedSetDeterministic(ceed, true); CeedChk(ierr);
+  ierr = CeedSetDeterministic(ceed, true); CeedChkBackend(ierr);
 
   // Create reference CEED that implementation will be dispatched
   //   through unless overridden
@@ -34,7 +34,7 @@ CEED_INTERN int CeedInit_Magma_Det(const char *resource, Ceed ceed) {
   #else
   CeedInit("/gpu/cuda/magma", &ceedref);
   #endif
-  ierr = CeedSetDelegate(ceed, ceedref); CeedChk(ierr);
+  ierr = CeedSetDelegate(ceed, ceedref); CeedChkBackend(ierr);
 
   // Create reference CEED for restriction
   Ceed restrictionceedref;
@@ -44,9 +44,9 @@ CEED_INTERN int CeedInit_Magma_Det(const char *resource, Ceed ceed) {
   CeedInit("/gpu/cuda/ref", &restrictionceedref);
   #endif
   ierr = CeedSetObjectDelegate(ceed, restrictionceedref, "ElemRestriction");
-  CeedChk(ierr);
+  CeedChkBackend(ierr);
 
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 CEED_INTERN int CeedRegister_Magma_Det(void) {
