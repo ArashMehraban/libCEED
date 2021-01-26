@@ -184,7 +184,7 @@ static int CeedElemRestrictionApply_Cuda(CeedElemRestriction r,
   // Restore arrays
   ierr = CeedVectorRestoreArrayRead(u, &d_u); CeedChkBackend(ierr);
   ierr = CeedVectorRestoreArray(v, &d_v); CeedChkBackend(ierr);
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 //------------------------------------------------------------------------------
@@ -219,7 +219,7 @@ static int CeedElemRestrictionGetOffsets_Cuda(CeedElemRestriction rstr,
     *offsets = impl->d_ind;
     break;
   }
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 //------------------------------------------------------------------------------
@@ -240,7 +240,7 @@ static int CeedElemRestrictionDestroy_Cuda(CeedElemRestriction r) {
   ierr = cudaFree(impl->d_lvec_indices); CeedChk_Cu(ceed, ierr);
 
   ierr = CeedFree(&impl); CeedChkBackend(ierr);
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 //------------------------------------------------------------------------------
@@ -331,7 +331,7 @@ static int CeedElemRestrictionOffset_Cuda(const CeedElemRestriction r,
   ierr = CeedFree(&lvec_indices); CeedChkBackend(ierr);
   ierr = CeedFree(&toffsets); CeedChkBackend(ierr);
   ierr = CeedFree(&tindices); CeedChkBackend(ierr);
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 //------------------------------------------------------------------------------
@@ -462,7 +462,7 @@ int CeedElemRestrictionCreate_Cuda(CeedMemType mtype, CeedCopyMode cmode,
   ierr = CeedSetBackendFunction(ceed, "ElemRestriction", r, "Destroy",
                                 CeedElemRestrictionDestroy_Cuda);
   CeedChkBackend(ierr);
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 //------------------------------------------------------------------------------

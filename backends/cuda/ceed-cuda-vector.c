@@ -39,7 +39,7 @@ static inline int CeedVectorSyncH2D_Cuda(const CeedVector vec) {
 
   ierr = cudaMemcpy(data->d_array, data->h_array, bytes(vec),
                     cudaMemcpyHostToDevice); CeedChk_Cu(ceed, ierr);
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 //------------------------------------------------------------------------------
@@ -54,7 +54,7 @@ static inline int CeedVectorSyncD2H_Cuda(const CeedVector vec) {
 
   ierr = cudaMemcpy(data->h_array, data->d_array, bytes(vec),
                     cudaMemcpyDeviceToHost); CeedChk_Cu(ceed, ierr);
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 //------------------------------------------------------------------------------
@@ -89,7 +89,7 @@ static int CeedVectorSetArrayHost_Cuda(const CeedVector vec,
     break;
   }
   data->memState = CEED_CUDA_HOST_SYNC;
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 //------------------------------------------------------------------------------
@@ -127,7 +127,7 @@ static int CeedVectorSetArrayDevice_Cuda(const CeedVector vec,
     break;
   }
   data->memState = CEED_CUDA_DEVICE_SYNC;
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 //------------------------------------------------------------------------------
@@ -183,7 +183,7 @@ static int CeedVectorTakeArray_Cuda(CeedVector vec, CeedMemType mtype,
     break;
   }
 
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 //------------------------------------------------------------------------------
@@ -193,7 +193,7 @@ static int CeedHostSetValue_Cuda(CeedScalar *h_array, CeedInt length,
                                  CeedScalar val) {
   for (int i = 0; i < length; i++)
     h_array[i] = val;
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 //------------------------------------------------------------------------------
@@ -243,7 +243,7 @@ static int CeedVectorSetValue_Cuda(CeedVector vec, CeedScalar val) {
     CeedChkBackend(ierr);
     break;
   }
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 //------------------------------------------------------------------------------
@@ -291,7 +291,7 @@ static int CeedVectorGetArrayRead_Cuda(const CeedVector vec,
     *array = data->d_array;
     break;
   }
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 //------------------------------------------------------------------------------
@@ -335,21 +335,21 @@ static int CeedVectorGetArray_Cuda(const CeedVector vec,
     *array = data->d_array;
     break;
   }
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 //------------------------------------------------------------------------------
 // Restore an array obtained using CeedVectorGetArrayRead()
 //------------------------------------------------------------------------------
 static int CeedVectorRestoreArrayRead_Cuda(const CeedVector vec) {
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 //------------------------------------------------------------------------------
 // Restore an array obtained using CeedVectorGetArray()
 //------------------------------------------------------------------------------
 static int CeedVectorRestoreArray_Cuda(const CeedVector vec) {
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 //------------------------------------------------------------------------------
@@ -395,7 +395,7 @@ static int CeedVectorNorm_Cuda(CeedVector vec, CeedNormType type,
   }
   ierr = CeedVectorRestoreArrayRead(vec, &d_array); CeedChkBackend(ierr);
 
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 //------------------------------------------------------------------------------
@@ -405,7 +405,7 @@ static int CeedHostReciprocal_Cuda(CeedScalar *h_array, CeedInt length) {
   for (int i = 0; i < length; i++)
     if (fabs(h_array[i]) > CEED_EPSILON)
       h_array[i] = 1./h_array[i];
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 //------------------------------------------------------------------------------
@@ -442,7 +442,7 @@ static int CeedVectorReciprocal_Cuda(CeedVector vec) {
     break; // Not possible, but included for completness
     // LCOV_EXCL_STOP
   }
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 //------------------------------------------------------------------------------
@@ -458,7 +458,7 @@ static int CeedVectorDestroy_Cuda(const CeedVector vec) {
   ierr = cudaFree(data->d_array_allocated); CeedChk_Cu(ceed, ierr);
   ierr = CeedFree(&data->h_array_allocated); CeedChkBackend(ierr);
   ierr = CeedFree(&data); CeedChkBackend(ierr);
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 //------------------------------------------------------------------------------
@@ -494,5 +494,5 @@ int CeedVectorCreate_Cuda(CeedInt n, CeedVector vec) {
   ierr = CeedCalloc(1, &data); CeedChkBackend(ierr);
   ierr = CeedVectorSetData(vec, data); CeedChkBackend(ierr);
   data->memState = CEED_CUDA_NONE_SYNC;
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }

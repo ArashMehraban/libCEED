@@ -122,7 +122,7 @@ static int CeedOperatorSetupFields_Blocked(CeedQFunction qf,
       break; // Not implemented
     }
   }
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 //------------------------------------------------------------------------------
@@ -132,7 +132,7 @@ static int CeedOperatorSetup_Blocked(CeedOperator op) {
   int ierr;
   bool setupdone;
   ierr = CeedOperatorIsSetupDone(op, &setupdone); CeedChkBackend(ierr);
-  if (setupdone) return 0;
+  if (setupdone) return CEED_ERROR_SUCCESS;
   Ceed ceed;
   ierr = CeedOperatorGetCeed(op, &ceed); CeedChkBackend(ierr);
   CeedOperator_Blocked *impl;
@@ -201,7 +201,7 @@ static int CeedOperatorSetup_Blocked(CeedOperator op) {
 
   ierr = CeedOperatorSetSetupDone(op); CeedChkBackend(ierr);
 
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 //------------------------------------------------------------------------------
@@ -244,7 +244,7 @@ static inline int CeedOperatorSetupInputs_Blocked(CeedInt numinputfields,
       CeedChkBackend(ierr);
     }
   }
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 //------------------------------------------------------------------------------
@@ -322,7 +322,7 @@ static inline int CeedOperatorInputBasis_Blocked(CeedInt e, CeedInt Q,
     }
     }
   }
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 //------------------------------------------------------------------------------
@@ -393,7 +393,7 @@ static inline int CeedOperatorOutputBasis_Blocked(CeedInt e, CeedInt Q,
     }
     }
   }
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 //------------------------------------------------------------------------------
@@ -422,7 +422,7 @@ static inline int CeedOperatorRestoreInputs_Blocked(CeedInt numinputfields,
       CeedChkBackend(ierr);
     }
   }
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 //------------------------------------------------------------------------------
@@ -522,7 +522,7 @@ static int CeedOperatorApplyAdd_Blocked(CeedOperator op, CeedVector invec,
   ierr = CeedOperatorRestoreInputs_Blocked(numinputfields, qfinputfields,
          opinputfields, false, impl); CeedChkBackend(ierr);
 
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 //------------------------------------------------------------------------------
@@ -698,7 +698,7 @@ static int CeedOperatorLinearAssembleQFunction_Blocked(CeedOperator op,
   ierr = CeedVectorDestroy(&lvec); CeedChkBackend(ierr);
   ierr = CeedElemRestrictionDestroy(&blkrstr); CeedChkBackend(ierr);
 
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 //------------------------------------------------------------------------------
@@ -733,7 +733,7 @@ static int CeedOperatorDestroy_Blocked(CeedOperator op) {
   ierr = CeedFree(&impl->qvecsout); CeedChkBackend(ierr);
 
   ierr = CeedFree(&impl); CeedChkBackend(ierr);
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 
 //------------------------------------------------------------------------------
@@ -755,6 +755,6 @@ int CeedOperatorCreate_Blocked(CeedOperator op) {
                                 CeedOperatorApplyAdd_Blocked); CeedChkBackend(ierr);
   ierr = CeedSetBackendFunction(ceed, "Operator", op, "Destroy",
                                 CeedOperatorDestroy_Blocked); CeedChkBackend(ierr);
-  return 0;
+  return CEED_ERROR_SUCCESS;
 }
 //------------------------------------------------------------------------------
