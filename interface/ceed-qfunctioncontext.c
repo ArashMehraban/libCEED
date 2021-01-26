@@ -183,7 +183,6 @@ int CeedQFunctionContextSetData(CeedQFunctionContext ctx, CeedMemType mtype,
   ctx->ctxsize = size;
   ierr = ctx->SetData(ctx, mtype, cmode, data); CeedChk(ierr);
   ctx->state += 2;
-
   return CEED_ERROR_SUCCESS;
 }
 
@@ -223,7 +222,6 @@ int CeedQFunctionContextGetData(CeedQFunctionContext ctx, CeedMemType mtype,
 
   ierr = ctx->GetData(ctx, mtype, data); CeedChk(ierr);
   ctx->state += 1;
-
   return CEED_ERROR_SUCCESS;
 }
 
@@ -300,7 +298,6 @@ int CeedQFunctionContextDestroy(CeedQFunctionContext *ctx) {
   if ((*ctx)->Destroy) {
     ierr = (*ctx)->Destroy(*ctx); CeedChk(ierr);
   }
-
   ierr = CeedDestroy(&(*ctx)->ceed); CeedChk(ierr);
   ierr = CeedFree(ctx); CeedChk(ierr);
   return CEED_ERROR_SUCCESS;
