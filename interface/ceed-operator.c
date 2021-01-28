@@ -66,7 +66,7 @@ int CeedOperatorCreateFallback(CeedOperator op) {
   // Clone Op
   CeedOperator opref;
   ierr = CeedCalloc(1, &opref); CeedChk(ierr);
-  memcpy(opref, op, sizeof(*opref)); CeedChk(ierr);
+  memcpy(opref, op, sizeof(*opref));
   opref->data = NULL;
   opref->interfacesetup = false;
   opref->backendsetup = false;
@@ -77,7 +77,7 @@ int CeedOperatorCreateFallback(CeedOperator op) {
   // Clone QF
   CeedQFunction qfref;
   ierr = CeedCalloc(1, &qfref); CeedChk(ierr);
-  memcpy(qfref, (op->qf), sizeof(*qfref)); CeedChk(ierr);
+  memcpy(qfref, (op->qf), sizeof(*qfref));
   qfref->data = NULL;
   qfref->ceed = ceedref;
   ierr = ceedref->QFunctionCreate(qfref); CeedChk(ierr);
