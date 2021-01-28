@@ -73,7 +73,7 @@ int CeedQFunctionRegister(const char *name, const char *source,
                           int (*init)(Ceed, const char *, CeedQFunction)) {
   if (num_qfunctions >= sizeof(qfunctions) / sizeof(qfunctions[0]))
     // LCOV_EXCL_START
-    return CeedError(NULL, CEED_ERROR_TERMINAL, "Too many gallery QFunctions");
+    return CeedError(NULL, CEED_ERROR_MAJOR, "Too many gallery QFunctions");
   // LCOV_EXCL_STOP
 
   strncpy(qfunctions[num_qfunctions].name, name, CEED_MAX_RESOURCE_LEN);
@@ -585,7 +585,7 @@ int CeedQFunctionAddInput(CeedQFunction qf, const char *fieldname, CeedInt size,
                           CeedEvalMode emode) {
   if (qf->operatorsset)
     // LCOV_EXCL_START
-    return CeedError(qf->ceed, CEED_ERROR_TERMINAL,
+    return CeedError(qf->ceed, CEED_ERROR_MAJOR,
                      "QFunction cannot be changed when in use by an operator");
   // LCOV_EXCL_STOP
   if ((emode == CEED_EVAL_WEIGHT) && (size != 1))
@@ -619,7 +619,7 @@ int CeedQFunctionAddOutput(CeedQFunction qf, const char *fieldname,
                            CeedInt size, CeedEvalMode emode) {
   if (qf->operatorsset)
     // LCOV_EXCL_START
-    return CeedError(qf->ceed, CEED_ERROR_TERMINAL,
+    return CeedError(qf->ceed, CEED_ERROR_MAJOR,
                      "QFunction cannot be changed when in use by an operator");
   // LCOV_EXCL_STOP
   if (emode == CEED_EVAL_WEIGHT)

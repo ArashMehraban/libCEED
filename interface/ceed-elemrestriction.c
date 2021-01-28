@@ -94,7 +94,7 @@ int CeedElemRestrictionGetStrides(CeedElemRestriction rstr,
                                   CeedInt (*strides)[3]) {
   if (!rstr->strides)
     // LCOV_EXCL_START
-    return CeedError(rstr->ceed, CEED_ERROR_NONTERMINAL,
+    return CeedError(rstr->ceed, CEED_ERROR_MINOR,
                      "ElemRestriction has no stride data");
   // LCOV_EXCL_STOP
 
@@ -177,7 +177,7 @@ int CeedElemRestrictionHasBackendStrides(CeedElemRestriction rstr,
     bool *hasbackendstrides) {
   if (!rstr->strides)
     // LCOV_EXCL_START
-    return CeedError(rstr->ceed, CEED_ERROR_NONTERMINAL,
+    return CeedError(rstr->ceed, CEED_ERROR_MINOR,
                      "ElemRestriction has no stride data");
   // LCOV_EXCL_STOP
 
@@ -206,7 +206,7 @@ int CeedElemRestrictionGetELayout(CeedElemRestriction rstr,
                                   CeedInt (*layout)[3]) {
   if (!rstr->layout[0])
     // LCOV_EXCL_START
-    return CeedError(rstr->ceed, CEED_ERROR_NONTERMINAL,
+    return CeedError(rstr->ceed, CEED_ERROR_MINOR,
                      "ElemRestriction has no layout data");
   // LCOV_EXCL_STOP
 
