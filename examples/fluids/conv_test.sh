@@ -51,7 +51,6 @@ for ((d=${test_flags[degree_start]}; d<=${test_flags[degree_end]}; d+=${test_fla
                 args="$args -$arg ${run_flags[$arg]}"
             fi
         done
-        echo $args
         ./navierstokes $args | grep "Relative Error:" | awk -v i="$i" -v res="$res" -v d="$d" '{ print i","res","d","$3}' >> conv_test_result.csv
         i=$((i+1))
     done
