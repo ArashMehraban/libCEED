@@ -3,3 +3,5 @@ navierstokes
 *.vts
 *.bin*
 *.vtu
+*.png
+*.csv

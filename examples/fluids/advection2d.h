@@ -73,7 +73,7 @@ struct SurfaceContext_ {
 #endif
 
 // *****************************************************************************
-// This QFunction sets the the initial conditions and boundary conditions
+// This QFunction sets the initial conditions and the boundary conditions
 //   for two test cases: ROTATION and TRANSLATION
 //
 // -- ROTATION (default)
@@ -135,12 +135,28 @@ static inline int Exact_Advection2d(CeedInt dim, CeedScalar time,
 
   // Setup
   const CeedScalar center[3] = {0.5*lx, 0.5*ly, 0.5*lz};
-  const CeedScalar theta[] = {M_PI, -M_PI/3, M_PI/3};
-  const CeedScalar x0[3] = {center[0] + .25*lx*cos(theta[0] + time), center[1] + .25*ly*sin(theta[0] + time), center[2]};
-  const CeedScalar x1[3] = {center[0] + .25*lx*cos(theta[1] + time), center[1] + .25*ly*sin(theta[1] + time), center[2]};
-  const CeedScalar x2[3] = {center[0] + .25*lx*cos(theta[2] + time), center[1] + .25*ly*sin(theta[2] + time), center[2]};
 
-  const CeedScalar x = X[0], y = X[1];
+  // Setup
+  const CeedScalar vortex_strength = 5;
+  const CeedScalar gamma = 1.4;
+  const CeedScalar cv = 2.5;
+  const CeedScalar R = 1.;
+  const CeedScalar x = X[0], y = X[1], z = X[2]; // Coordinates
+  // Vortex center
+  const CeedScalar xc = center[0] + wind[0] * time;
+  const CeedScalar yc = center[1] + wind[1] * time;
+
+  const CeedScalar x0 = x - xc;
+  const CeedScalar y0 = y - yc;
+  const CeedScalar r = sqrt( x0*x0 + y0*y0 );
+  const CeedScalar C = vortex_strength * exp((1. - r*r)/2.) / (2. * M_PI);
+  const CeedScalar delta_T = - (gamma - 1) * vortex_strength * vortex_strength *
+                             exp(1 - r*r) / (8 * gamma * M_PI * M_PI);
+  const CeedScalar S_vortex = 1; // no perturbation in the entropy P / rho^gamma
+  const CeedScalar S_bubble = (gamma - 1.) * vortex_strength * vortex_strength /
+                              (8.*gamma*M_PI*M_PI);
+  CeedScalar T, E, u[3] = {0.};
+  T = 1. - S_bubble * exp(1. - r*r);
 
   // Initial/Boundary Conditions
   switch (context->wind_type) {
@@ -162,17 +178,7 @@ static inline int Exact_Advection2d(CeedInt dim, CeedScalar time,
     return 1;
   }
 
-  CeedScalar r = sqrt(pow(x - x0[0], 2) + pow(y - x0[1], 2));
-  CeedScalar E = 1 - r/rc;
-
-  if (0) { // non-smooth initial conditions
-    if (q[4] < E) q[4] = E;
-    r = sqrt(pow(x - x1[0], 2) + pow(y - x1[1], 2));
-    if (r <= rc) q[4] = 1;
-  }
-  r = sqrt(pow(x - x2[0], 2) + pow(y - x2[1], 2));
-  E = (r <= rc) ? .5 + .5*cos(r*M_PI/rc) : 0;
-  if (q[4] < E) q[4] = E;
+  q[4] = cv * T + (wind[0]*wind[0] + wind[1]*wind[1])/2.;
 
   return 0;
 }
@@ -456,9 +462,14 @@ CEED_QFUNCTION(Advection2d_Sur)(void *ctx, CeedInt Q,
   CeedScalar (*v)[CEED_Q_VLA] = (CeedScalar(*)[CEED_Q_VLA])out[0];
   // *INDENT-ON*
   SurfaceContext context = (SurfaceContext)ctx;
-  const CeedScalar E_wind = context->E_wind;
   const CeedScalar strong_form = context->strong_form;
   const bool implicit = context->implicit;
+
+  const CeedScalar T_inlet = 1.;
+  const CeedScalar P_inlet = 1.;
+  const CeedScalar gamma = 1.4;
+  const CeedScalar cv = 2.5;
+  const CeedScalar R = 1.;
 
   CeedPragmaSIMD
   // Quadrature Point Loop
@@ -492,7 +503,10 @@ CEED_QFUNCTION(Advection2d_Sur)(void *ctx, CeedInt Q,
     if (u_n > 0) { // outflow
       v[4][i] = -(1 - strong_form) * wdetJb * E * u_n;
     } else { // inflow
-      v[4][i] = -(1 - strong_form) * wdetJb * E_wind * u_n;
+      const CeedScalar ke_inlet = (u[0]*u[0] + u[1]*u[1]) / 2.; // kinetic energy
+      // incoming total energy
+      const CeedScalar E_inlet = cv * T_inlet + ke_inlet;
+      v[4][i] = -(1 - strong_form) * wdetJb * E_inlet * u_n;
     }
   } // End Quadrature Point Loop
   return 0;
